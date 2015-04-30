@@ -2,18 +2,25 @@
 #### Data Structure #####
 data : a list of records
 record : a json like object ("winpercent":"....", "weather" : "...."})
+
+#### Heuristics #####
+@ 1
+random choose the attribute
+
+@ 2 
+maxmize infomation gain
 '''
 
-from attribute import Attr
 import re
 import sys
 from random import randint
+import math
 
 class Learner():
   def __init__(self): 
     
     if len(sys.argv) <= 1:
-      train_file = "../data/train_test.csv"
+      train_file = "../data/train_test2.csv"
     else:
       train_file = sys.argv[1]
 
@@ -22,13 +29,13 @@ class Learner():
     
     # get the list of attributes
     attrNames, records, resultAttr = readData(lines)
-    print len(attrNames)
-    print len(records)
-
-    print self.DTL(records, attrNames, resultAttr, 5)
+    print "read " +  str(len(attrNames)) + " attributes"
+    print "read " +  str(len(records))   + " records"
+    #print getEntropy(records, resultAttr)
+    print self.DTL(records, attrNames, resultAttr, 1)
 
   def DTL(self, records, attrNames, resultAttr, fitFunction):
-    resultValues = [record[resultAttr] for record in records]
+    resultValues  = [record[resultAttr] for record in records]
     default       = getMajority(records, resultAttr)
     
     # means follow the path, every thing is the same, but the result may still be different
@@ -47,18 +54,37 @@ class Learner():
       # get unique values from the record corresponding to bestAttr
       attrValues = getAttrValues(records, bestAttr)
 
+      newAttrNames = getNewAttrNames(attrNames, bestAttr) 
+      print newAttrNames
       for value in attrValues:
         newRecords   = getNewRecords(records, bestAttr, value)
-        newAttrNames = getNewAttrNames(attrNames, bestAttr) 
         child = self.DTL(newRecords, newAttrNames, resultAttr, fitFunction)
         tree[bestAttr][value] = child
 
     return tree
 
+def getInfoGain(records, attr, resultAttr):
+  freqMap = getFreqMap(records, resultAttr)
+  entropy = getEntropy(records, resultAttr)
+  subEntropy = 0.0
+  for key in freqMap.keys():
+    valFreq     = freqMap[key]/len(records)
+    subRecords  = [record for record in records if record[attr] == key]
+    subEntropy += valFreq * getEntropy(subRecords, resultAttr)
+
+  return entropy - subEntropy
+
+def getEntropy(records, resultAttr):
+  entropy = 0.0
+  freqMap = getFreqMap(records, resultAttr)
+  for freq in freqMap.values():
+    entropy += (-freq/len(records)) * math.log(freq/len(records), 2) 
+  return entropy
+
 def getNewAttrNames(attrNames, bestAttr):
   output = []
   for name in attrNames:
-    if name != bestAttr:
+    if name is not bestAttr:
       output.append(name)
   return output
 
@@ -76,18 +102,23 @@ def getAttrValues(records, bestAttr):
       output.append(record[bestAttr])
   return output
 
+def getFreqMap(records, resultAttr):
+  output = {}
+
+  for record in records:
+    result = record[resultAttr]
+    if result not in output.keys():
+      output[result] = 1.0
+    else:
+      output[result] += 1.0
+
+  return output
+
 def getMajority(records, resultAttr):
   if len(records) == 0:
     return 0
-  dictCount = {}
-  for record in records:
-    result = record[resultAttr]
-    if result not in dictCount.keys():
-      dictCount[result] = 1
-    else:
-      dictCount[result] += 1
+  dictCount = getFreqMap(records, resultAttr)
   Max = 0
-  output = 0
   for key in dictCount.keys():
     if dictCount[key] > Max:
       output = key 
@@ -95,14 +126,22 @@ def getMajority(records, resultAttr):
 
   return output
 
-def getBestAttr(records, attrNames, resultAttr, fitFunction):
+def getBestAttr(records, attrNames, resultAttr, heu):
   # random choose attribute
-  if fitFunction == 5:
+  if heu == 0:
     index = randint(0, len(attrNames)-1)
     return attrNames[index]
-  else:
-    # TODO  implement the entropy 
-    return 0
+  elif heu == 1:
+    output   = attrNames[0]
+    maxGain = 0.0
+    for attr in attrNames:
+      infoGain = getInfoGain(records, attr, resultAttr)
+      if infoGain > maxGain:
+        output = attr
+        maxGain = infoGain
+    return output
+
+  return ''
     
 # generate the attribute list and example list
 def readData(lines):
