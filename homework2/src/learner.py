@@ -36,7 +36,7 @@ class Learner():
     print "read " +  str(len(attrNames)) + " attributes"
     print "read " +  str(len(records))   + " records"
     #print getEntropy(records, resultAttr)
-    #printTree(self.DTL(records, attrNames, resultAttr, 1), -1)
+    #self.DTL(records, attrNames, resultAttr, 1)
     printTree(self.DTL(records, attrNames, resultAttr, 1), -1)
 
   def DTL(self, records, attrNames, resultAttr, fitFunction):
@@ -50,19 +50,25 @@ class Learner():
 
     elif resultValues.count(resultValues[0]) == len(resultValues):
       return Node(None, resultValues[0])
-
+      
     else:
       bestAttr, split = getBestAttr(records, attrNames, resultAttr, fitFunction)
       if split == 0:
         return Node(None, default)
-      print "the chosen attribute is : " + str(bestAttr)
-
+      #print "the chosen attribute is : " + str(bestAttr)
       # construct a 2-dimeinsal array that stores value for bestAttr, and result
       attrResultList = getTwoDimensionArray(records, bestAttr, resultAttr)
 
       #sort the array based on the best attr value
       newList = sorted(attrResultList, key=lambda x: x[0], reverse=False)
-      selectVal = getSelectVal(newList)
+      newDictList = []
+      for item in newList:
+        record = {} 
+        record[resultAttr] = item[1]
+        newDictList.append(record)
+
+      selectIndex = getSelectVal(newDictList, resultAttr)
+      selectVal   = newList[selectIndex][0]
 
       tree = Node(bestAttr, selectVal)
       
@@ -72,6 +78,9 @@ class Learner():
 
       # add left and right child
       leftNewRecords, rightNewRecords = getNewRecords(records, bestAttr, selectVal)
+      #print len(leftNewRecords)
+      #print len(rightNewRecords)
+
       leftChild  = self.DTL(leftNewRecords, newAttrNames, resultAttr, fitFunction)
       rightChild = self.DTL(rightNewRecords, newAttrNames, resultAttr, fitFunction)
       tree.left  = leftChild
@@ -79,14 +88,25 @@ class Learner():
 
     return tree
 
-def getSelectVal(newList):
-  
-  resultList = []
-  for item in newList:
-    resultList.append(item[1])
+def getEntropy(records, resultAttr):
+  entropy = 0.0
+  freqMap = getFreqMap(records, resultAttr)
+  for freq in freqMap.values():
+    entropy += (-freq/len(records)) * math.log(freq/len(records), 2) 
+  return entropy
 
-  return newList[len(newList)/2][0]
+def getSelectVal(newDictList, resultAttr):
+  maxEntropy = 0.0 
+  selectIndex = 0
+  for index in range(len(newDictList)):
+    leftEntropy  = getEntropy(newDictList[:index], resultAttr) * len(newDictList[:index])/len(newDictList)
+    rightEntropy = getEntropy(newDictList[index:], resultAttr) * len(newDictList[index:])/len(newDictList)
+    totalEntropy = leftEntropy + rightEntropy
+    if totalEntropy > maxEntropy:
+      selectIndex = index
+      maxEntropy = totalEntropy
 
+  return selectIndex
 
 def getTwoDimensionArray(records, bestAttr, resultAttr):
   output = []
@@ -125,13 +145,6 @@ def getInfoGain(records, attr, resultAttr):
     subEntropy += valFreq * getEntropy(subRecords, resultAttr)
 
   return entropy - subEntropy
-
-def getEntropy(records, resultAttr):
-  entropy = 0.0
-  freqMap = getFreqMap(records, resultAttr)
-  for freq in freqMap.values():
-    entropy += (-freq/len(records)) * math.log(freq/len(records), 2) 
-  return entropy
 
 def getNewAttrNames(attrNames, bestAttr):
   output = []
