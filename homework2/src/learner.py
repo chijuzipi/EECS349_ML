@@ -22,7 +22,8 @@ class Learner():
   def __init__(self): 
     
     if len(sys.argv) <= 1:
-      train_file = "../data/train_test3.csv"
+      #train_file = "../data/train_test3.csv"
+      train_file = "../data/train_test.csv"
     else:
       train_file = sys.argv[1]
 
@@ -34,6 +35,7 @@ class Learner():
     print "read " +  str(len(attrNames)) + " attributes"
     print "read " +  str(len(records))   + " records"
     #print getEntropy(records, resultAttr)
+    return
     printTree(self.DTL(records, attrNames, resultAttr, 1), -1)
 
   def DTL(self, records, attrNames, resultAttr, fitFunction):
@@ -57,9 +59,9 @@ class Learner():
       attrValues = getAttrValues(records, bestAttr)
 
       newAttrNames = getNewAttrNames(attrNames, bestAttr) 
-      #print newAttrNames
+      print "the new attribute is " + str(newAttrNames)
       for value in attrValues:
-        newRecords   = getNewRecords(records, bestAttr, value)
+        neiwRecords   = getNewRecords(records, bestAttr, value)
         child = self.DTL(newRecords, newAttrNames, resultAttr, fitFunction)
         tree.addChild(value, child)
 
