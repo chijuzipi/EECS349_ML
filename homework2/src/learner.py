@@ -1,7 +1,7 @@
 '''
 #### Data Structure #####
 data : a list of records
-record : a json like object ("winpercent":"....", "weather" : "...."})
+record : a json like object ("winpercent":"0.644213", "weather" : "...."})
 
 #### Heuristics #####
 @ 1
@@ -11,6 +11,7 @@ random choose the attribute
 maxmize infomation gain
 '''
 
+#from __future__ import print_function
 import re
 import sys
 from random import randint
@@ -21,7 +22,7 @@ class Learner():
   def __init__(self): 
     
     if len(sys.argv) <= 1:
-      train_file = "../data/train_test2.csv"
+      train_file = "../data/train_test3.csv"
     else:
       train_file = sys.argv[1]
 
@@ -33,7 +34,7 @@ class Learner():
     print "read " +  str(len(attrNames)) + " attributes"
     print "read " +  str(len(records))   + " records"
     #print getEntropy(records, resultAttr)
-    printTree(self.DTL(records, attrNames, resultAttr, 1))
+    printTree(self.DTL(records, attrNames, resultAttr, 1), -1)
 
   def DTL(self, records, attrNames, resultAttr, fitFunction):
     resultValues  = [record[resultAttr] for record in records]
@@ -56,7 +57,7 @@ class Learner():
       attrValues = getAttrValues(records, bestAttr)
 
       newAttrNames = getNewAttrNames(attrNames, bestAttr) 
-      print newAttrNames
+      #print newAttrNames
       for value in attrValues:
         newRecords   = getNewRecords(records, bestAttr, value)
         child = self.DTL(newRecords, newAttrNames, resultAttr, fitFunction)
@@ -64,15 +65,16 @@ class Learner():
 
     return tree
 
-def printTree(tree):
-  # if it is a leaf node
-  print ('| ')
+def printTree(tree, n):
   if tree.name is None:
-    print ("--->" + tree.result)
-    return 
-  print (tree.name + " == ")
-  for node in tree.getChildren():
-    printTree(node)
+    print "----->" + tree.result
+    return
+  print
+  n += 1
+  for val in tree.children.keys():
+    print n * "| ",
+    print tree.name + "=" + val,
+    printTree(tree.children[val], n)
   
 
 def getInfoGain(records, attr, resultAttr):
