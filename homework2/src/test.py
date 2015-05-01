@@ -1,4 +1,12 @@
+from __future__ import print_function
+
+print ('this is a test', end='')
+print ('this is a test', end='')
+print ('this is a test', end='')
+print ('this is a test', end='')
+
 def getFreqMap(records, resultAttr):
+
   output = {}
 
   for record in records:
@@ -39,7 +47,7 @@ records.append(coll3)
 records.append(coll4)
 records.append(coll5)
 
-print getMajority(records, 'piggy')
+#print getMajority(records, 'piggy')
 
 List = []
 List.append('1')

@@ -14,6 +14,7 @@ maxmize infomation gain
 import re
 import sys
 from random import randint
+from node import Node
 import math
 
 class Learner():
@@ -32,7 +33,7 @@ class Learner():
     print "read " +  str(len(attrNames)) + " attributes"
     print "read " +  str(len(records))   + " records"
     #print getEntropy(records, resultAttr)
-    print self.DTL(records, attrNames, resultAttr, 1)
+    printTree(self.DTL(records, attrNames, resultAttr, 1))
 
   def DTL(self, records, attrNames, resultAttr, fitFunction):
     resultValues  = [record[resultAttr] for record in records]
@@ -41,15 +42,15 @@ class Learner():
     # means follow the path, every thing is the same, but the result may still be different
     # therefore return majority
     if len(records) == 0 or len(attrNames) == 0:
-      return default
+      return Node(None, default)
 
     elif resultValues.count(resultValues[0]) == len(resultValues):
-      return resultValues[0]
+      return Node(None, resultValues[0])
     
     else:
       bestAttr = getBestAttr(records, attrNames, resultAttr, fitFunction)
       print "the chosen attribute is : " + str(bestAttr)
-      tree = {bestAttr:{}}
+      tree = Node(bestAttr, None)
 
       # get unique values from the record corresponding to bestAttr
       attrValues = getAttrValues(records, bestAttr)
@@ -59,9 +60,20 @@ class Learner():
       for value in attrValues:
         newRecords   = getNewRecords(records, bestAttr, value)
         child = self.DTL(newRecords, newAttrNames, resultAttr, fitFunction)
-        tree[bestAttr][value] = child
+        tree.addChild(value, child)
 
     return tree
+
+def printTree(tree):
+  # if it is a leaf node
+  print ('| ')
+  if tree.name is None:
+    print ("--->" + tree.result)
+    return 
+  print (tree.name + " == ")
+  for node in tree.getChildren():
+    printTree(node)
+  
 
 def getInfoGain(records, attr, resultAttr):
   freqMap = getFreqMap(records, resultAttr)
