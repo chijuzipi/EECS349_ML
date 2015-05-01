@@ -17,6 +17,7 @@ import sys
 from random import randint
 from node import Node
 import math
+import numpy
 
 class Learner():
   def __init__(self): 
@@ -35,7 +36,7 @@ class Learner():
     print "read " +  str(len(attrNames)) + " attributes"
     print "read " +  str(len(records))   + " records"
     #print getEntropy(records, resultAttr)
-    return
+    #printTree(self.DTL(records, attrNames, resultAttr, 1), -1)
     printTree(self.DTL(records, attrNames, resultAttr, 1), -1)
 
   def DTL(self, records, attrNames, resultAttr, fitFunction):
@@ -49,35 +50,70 @@ class Learner():
 
     elif resultValues.count(resultValues[0]) == len(resultValues):
       return Node(None, resultValues[0])
-    
+
     else:
-      bestAttr = getBestAttr(records, attrNames, resultAttr, fitFunction)
+      bestAttr, split = getBestAttr(records, attrNames, resultAttr, fitFunction)
+      if split == 0:
+        return Node(None, default)
       print "the chosen attribute is : " + str(bestAttr)
-      tree = Node(bestAttr, None)
 
-      # get unique values from the record corresponding to bestAttr
-      attrValues = getAttrValues(records, bestAttr)
+      # construct a 2-dimeinsal array that stores value for bestAttr, and result
+      attrResultList = getTwoDimensionArray(records, bestAttr, resultAttr)
 
+      #sort the array based on the best attr value
+      newList = sorted(attrResultList, key=lambda x: x[0], reverse=False)
+      selectVal = getSelectVal(newList)
+
+      tree = Node(bestAttr, selectVal)
+      
+      # No need to remove the bestAttr from the attrNames, since the bestAttr may need to show up again
       newAttrNames = getNewAttrNames(attrNames, bestAttr) 
-      print "the new attribute is " + str(newAttrNames)
-      for value in attrValues:
-        neiwRecords   = getNewRecords(records, bestAttr, value)
-        child = self.DTL(newRecords, newAttrNames, resultAttr, fitFunction)
-        tree.addChild(value, child)
+      #print "the new attribute is " + str(newAttrNames)
+
+      # add left and right child
+      leftNewRecords, rightNewRecords = getNewRecords(records, bestAttr, selectVal)
+      leftChild  = self.DTL(leftNewRecords, newAttrNames, resultAttr, fitFunction)
+      rightChild = self.DTL(rightNewRecords, newAttrNames, resultAttr, fitFunction)
+      tree.left  = leftChild
+      tree.right = rightChild
 
     return tree
 
+def getSelectVal(newList):
+  
+  resultList = []
+  for item in newList:
+    resultList.append(item[1])
+
+  return newList[len(newList)/2][0]
+
+
+def getTwoDimensionArray(records, bestAttr, resultAttr):
+  output = []
+  for i in range(len(records)):
+    inner = []
+    record = records[i]
+    inner.append(record[bestAttr])
+    inner.append(record[resultAttr])
+    output.append(inner)
+  return output
+
 def printTree(tree, n):
+  # if it is a leaf
   if tree.name is None:
-    print "----->" + tree.result
+    print "----->" + str(tree.value)
     return
   print
   n += 1
-  for val in tree.children.keys():
-    print n * "| ",
-    print tree.name + "=" + val,
-    printTree(tree.children[val], n)
-  
+  #print left child
+  print n * "| ",
+  print tree.name + "<" + tree.value,
+  printTree(tree.left, n)
+
+  #print right child
+  print n * "| ",
+  print tree.name + ">=" + tree.value,
+  printTree(tree.right, n)
 
 def getInfoGain(records, attr, resultAttr):
   freqMap = getFreqMap(records, resultAttr)
@@ -105,11 +141,14 @@ def getNewAttrNames(attrNames, bestAttr):
   return output
 
 def getNewRecords(records, bestAttr, value):
-  output = []
+  leftOutput = []
+  rightOutput = []
   for record in records:
-    if record[bestAttr] == value:
-      output.append(record)
-  return output
+    if record[bestAttr] < value:
+      leftOutput.append(record)
+    if record[bestAttr] >= value:
+      rightOutput.append(record)
+  return leftOutput, rightOutput
 
 def getAttrValues(records, bestAttr):
   output = []
@@ -155,7 +194,10 @@ def getBestAttr(records, attrNames, resultAttr, heu):
       if infoGain > maxGain:
         output = attr
         maxGain = infoGain
-    return output
+    if maxGain == 0.0:
+      return output, 0
+    else:
+      return output, 1
 
   return ''
     
@@ -164,6 +206,7 @@ def readData(lines):
   # construct the attrbute name list
   dividList = lines[0].split(',')
   attrList = []
+
   for attr in dividList:
     attr = re.compile(r'[\n\r\t]').sub(' ', attr).rstrip()
     attrList.append(attr)

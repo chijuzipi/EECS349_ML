@@ -1,9 +1,11 @@
 class Node:
-  def __init__(self, name, result):
+  def __init__(self, name, value):
     self.name = name
-    self.result = result
-    self.children = {}
-
+    self.value = value
+    self.left = None
+    self.right = None
+  
+  '''
   def addChild(self, value, node):
     self.children[value] = node
     
@@ -12,3 +14,4 @@ class Node:
 
   def getChildren(self):
     return self.children.values()
+  '''

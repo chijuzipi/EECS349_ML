@@ -1,10 +1,3 @@
-from __future__ import print_function
-
-print ('this is a test', end='')
-print ('this is a test', end='')
-print ('this is a test', end='')
-print ('this is a test', end='')
-
 def getFreqMap(records, resultAttr):
 
   output = {}
@@ -66,4 +59,13 @@ def getNewAttrNames(attrNames, bestAttr):
 attrNames = ['1', '2', '3']
 bestAttr  = '2'
 #print getNewAttrNames(attrNames, bestAttr)
+
+def getTwoDimensionArray(records, bestAttr, resultAttr):
+  output = [][]
+  for i in range(len(records)):
+    attrVal = record[bestAttr]
+    result  = record[resultAttr]
+    output[i][0] = attrVal
+    output[i][1] = result
+  return output
 
