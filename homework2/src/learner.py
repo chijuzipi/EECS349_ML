@@ -24,7 +24,7 @@ class Learner():
     
     if len(sys.argv) <= 1:
       #train_file = "../data/train_test3.csv"
-      train_file = "../data/train_test.csv"
+      train_file = "../data/origin/btrain.csv"
     else:
       train_file = sys.argv[1]
 
@@ -35,11 +35,10 @@ class Learner():
     attrNames, records, resultAttr = readData(lines)
     print "read " +  str(len(attrNames)) + " attributes"
     print "read " +  str(len(records))   + " records"
-    #print getEntropy(records, resultAttr)
-    #self.DTL(records, attrNames, resultAttr, 1)
+
     printTree(self.DTL(records, attrNames, resultAttr, 1), -1)
 
-  def DTL(self, records, attrNames, resultAttr, fitFunction):
+  def DTL(self, records, attrNames, resultAttr):
     resultValues  = [record[resultAttr] for record in records]
     default       = getMajority(records, resultAttr)
     
@@ -52,9 +51,7 @@ class Learner():
       return Node(None, resultValues[0])
       
     else:
-      bestAttr, split = getBestAttr(records, attrNames, resultAttr, fitFunction)
-      if split == 0:
-        return Node(None, default)
+      bestAttr = getBestAttr(records, attrNames, resultAttr)
       #print "the chosen attribute is : " + str(bestAttr)
       # construct a 2-dimeinsal array that stores value for bestAttr, and result
       attrResultList = getTwoDimensionArray(records, bestAttr, resultAttr)
@@ -194,23 +191,19 @@ def getMajority(records, resultAttr):
 
   return output
 
-def getBestAttr(records, attrNames, resultAttr, heu):
+def getBestAttr(records, attrNames, resultAttr):
   # random choose attribute
-  if heu == 0:
-    index = randint(0, len(attrNames)-1)
-    return attrNames[index]
-  elif heu == 1:
-    output   = attrNames[0]
-    maxGain = 0.0
-    for attr in attrNames:
-      infoGain = getInfoGain(records, attr, resultAttr)
-      if infoGain > maxGain:
-        output = attr
-        maxGain = infoGain
-    if maxGain == 0.0:
-      return output, 0
-    else:
-      return output, 1
+  output   = attrNames[0]
+  maxGain = 0.0
+  for attr in attrNames:
+    infoGain = getInfoGain(records, attr, resultAttr)
+    if infoGain > maxGain:
+      output = attr
+      maxGain = infoGain
+  if maxGain == 0.0:
+    return output, 0
+  else:
+    return output, 1
 
   return ''
     
