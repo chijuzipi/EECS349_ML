@@ -18,17 +18,20 @@ import math
 import numpy
 
 class Learner():
-  def __init__(self): 
+  def __init__(self, datapath): 
     
-    if len(sys.argv) <= 1:
-      train_file = "../data/origin/btrain.csv"
+    if datapath != "None":
+      train_file = datapath
+
+    elif len(sys.argv) <= 1:
+      train_file = "btrain.csv"
       #train_file = "../data/test.csv"
     else:
       train_file = sys.argv[1]
 
     f = open(train_file, "r")
     lines = f.readlines()
-    lines = lines[:2000]
+    lines = lines[:16000]
     
     # get the list of attributes
     readInput  = Datareader(lines)
@@ -42,6 +45,7 @@ class Learner():
 
     print "read " +  str(len(attrNames)) + " attributes"
     print "read " +  str(len(records))   + " records"
+    print 
 
     self.tree = self.DTL(records, attrNames, resultAttr)
     
@@ -99,7 +103,7 @@ class Learner():
     return tree
   
 def main():
-  learner = Learner()
+  learner = Learner("None")
 
 if __name__== '__main__':
   main()

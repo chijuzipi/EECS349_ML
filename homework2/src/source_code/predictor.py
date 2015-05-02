@@ -6,9 +6,12 @@ import helper
 import sys
 
 class Predictor():
-  def __init__(self, tree):
+  def __init__(self, datapath, tree):
     # decision tree get from the learner
     self.DT = tree
+    
+    if datapath != None:
+      test_file = datapath
 
     if len(sys.argv) <= 1:
       test_file = "../data/origin/test.csv"
@@ -17,7 +20,8 @@ class Predictor():
 
     f = open(test_file, "r")
     lines = f.readlines()
-    lines = lines[:20]
+
+    f2 = open("btest_output.csv", "w")
 
     # get the list of attributes
     readInput  = Datareader(lines)
@@ -28,6 +32,13 @@ class Predictor():
 
     helper.process(records, attrNames[:len(attrNames)-1], typeList) 
     self.predict(records, tree, resultAttr)
+    for record in records:
+      for attr in attrNames:
+        val = record[attr]
+        if attr == resultAttr:
+          val = int(val) 
+        f2.write(str(val) + ',')
+      f2.write('\n')
   
   # the predict function update the "winner" filed in the records
   def predict(self, records, tree, resultAttr):

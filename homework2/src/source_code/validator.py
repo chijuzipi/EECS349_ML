@@ -6,19 +6,20 @@ import helper
 import sys
 
 class Validator():
-  def __init__(self, tree):
+  def __init__(self, datapath, tree):
     # decision tree get from the learner
     self.DT = tree
 
-    if len(sys.argv) <= 1:
-      validate_file = "../data/origin/validate.csv"
-      #validate_file = "../data/origin/btrain.csv"
+    if datapath != "None":
+      validate_file = datapath
+    elif len(sys.argv) <= 1:
+      validate_file = "bvalidate.csv"
     else:
       validate_file = sys.argv[1]
 
+
     f = open(validate_file, "r")
     lines = f.readlines()
-    lines = lines[:2000]
 
     # get the list of attributes
     readInput  = Datareader(lines)
@@ -28,9 +29,10 @@ class Validator():
     typeList   = readInput.typeList
 
     helper.process(records, attrNames, typeList) 
-    print len(records)
-    print "##############################"
+    print 
+    print "---> Using the validation set, the prediction accuracy is : "
     print(self.validate(records, self.DT, resultAttr))
+    print 
 
   def validate(self, records, tree, resultAttr):
     total   = len(records)

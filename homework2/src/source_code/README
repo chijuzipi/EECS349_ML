@@ -1,0 +1,12 @@
+The program is divided into 3 main modules:
+1) Learner
+2) Validator
+3) Predictor
+
+with some helper modules that contains helper functions. The entrance of the program is through main.py file
+
+
+To run the program, type: " python main.py [train_data_set] [validation_data_set] [test_data_set] "
+
+The program first use train data set to build the decision tree, and use the tree for validation set to calculate the
+prediction accuracy, and finally, the tree is passed to test set for prediction. The predicted value is written to file

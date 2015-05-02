@@ -154,14 +154,16 @@ def printTree(tree, n):
 
 def printDNF(tree):
   stat = []
-  count = 0
+  count = []
+  count.append(0)
+
   buildstat(tree, stat, count)
 
 def buildstat(tree, stat, count):
-  if count > 16:
+  if count[0] > 16:
     return 
   if tree.name is None:
-    count += 1
+    count[0] += 1
     if float(tree.value) == 0.0:
       print "[NOT(" + " AND ".join(stat) + ")]" + " OR "
     else:
@@ -169,10 +171,10 @@ def buildstat(tree, stat, count):
     return
   
   stat.append(tree.name + " < " + str(tree.value))
-  buildstat(tree.left, stat)
+  buildstat(tree.left, stat, count)
   stat.pop()
   stat.append(tree.name + " >= " + str(tree.value))
-  buildstat(tree.right, stat)
+  buildstat(tree.right, stat, count)
   stat.pop()
   return
 
